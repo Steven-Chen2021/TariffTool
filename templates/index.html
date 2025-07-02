@@ -45,14 +45,36 @@
 <body>
     <h2>Tariff Lookup Tool</h2>
     <form id="calcForm">
-        Product COO: <input type="text" name="product_coo"><br>
-        HTS Code: <input type="text" name="hts_code"><br>
+        <table id="input-table">
+            <thead>
+                <tr>
+                    <th>Product COO</th>
+                    <th>HTS Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="product_coo[]"></td>
+                    <td><input type="text" name="hts_code[]"></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" id="add-row">Add Row</button>
         <button type="submit">Submit</button>
     </form>
     <div id="results-container">
         <table id="results-table" style="display:none;">
             <thead>
-                <tr><th>Tariff Type</th><th>Rate</th></tr>
+                <tr>
+                    <th>COO</th>
+                    <th>HTS Code</th>
+                    <th>Steel Tariff</th>
+                    <th>Aluminum Tariff</th>
+                    <th>301 Tariff</th>
+                    <th>New China 20%</th>
+                    <th>Applicable Reciprocal Tariff Rate</th>
+                    <th>Total New Duty Rate (not including Base Duty Rate, AD/CVD, or future tariffs)</th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>
@@ -66,6 +88,14 @@
             return (num * 100).toFixed(2) + '%';
         }
 
+        document.getElementById('add-row').addEventListener('click', function() {
+            const tbody = document.querySelector('#input-table tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><input type="text" name="product_coo[]"></td>` +
+                           `<td><input type="text" name="hts_code[]"></td>`;
+            tbody.appendChild(tr);
+        });
+
         document.getElementById('calcForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -75,24 +105,20 @@
             })
             .then(res => res.json())
             .then(data => {
-                const rows = [
-                    ['Steel Tariff', data.M2],
-                    ['Aluminum Tariff', data.Q2],
-                    ['301 Tariff', data.T2],
-                    ['New China 20%', data.AB2],
-                    ['Applicable Reciprocal Tariff Rate', data.AE2],
-                    ['Total New Duty Rate (not including Base Duty Rate, AD/CVD, or future tariffs)', data.AF2]
-                ];
                 const tbody = document.querySelector('#results-table tbody');
                 tbody.innerHTML = '';
-                rows.forEach(function(r) {
+                data.forEach(row => {
                     const tr = document.createElement('tr');
-                    const tdLabel = document.createElement('td');
-                    tdLabel.textContent = r[0];
-                    const tdValue = document.createElement('td');
-                    tdValue.textContent = formatPercent(r[1]);
-                    tr.appendChild(tdLabel);
-                    tr.appendChild(tdValue);
+                    tr.innerHTML = `
+                        <td>${row.coo}</td>
+                        <td>${row.hts}</td>
+                        <td>${formatPercent(row.steel)}</td>
+                        <td>${formatPercent(row.aluminum)}</td>
+                        <td>${formatPercent(row.tariff_301)}</td>
+                        <td>${formatPercent(row.china20)}</td>
+                        <td>${formatPercent(row.reciprocal)}</td>
+                        <td>${formatPercent(row.total_new_duty)}</td>
+                    `;
                     tbody.appendChild(tr);
                 });
                 document.getElementById('results-table').style.display = 'table';
