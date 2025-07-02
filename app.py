@@ -1,36 +1,35 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import xlwings as xw
 
-app = Flask(__name__)  # ✅ 定義 app 變數
+app = Flask(__name__)
+
 
 @app.route('/')
 def index():
-    return '''
-        <form method="post" action="/calculate">
-            A: <input name="param1"><br>
-            B: <input name="param2"><br>
-            <button type="submit">Calculate</button>
-        </form>
-    '''
+    return render_template('index.html')
+
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    a = float(request.form['param1'])
-    b = float(request.form['param2'])
+    product_coo = request.form.get('product_coo', '')
+    hts_code = request.form.get('hts_code', '')
 
-    wb = xw.Book('workbook.xlsx')  # 確保同資料夾中有這個檔案
-    sht = wb.sheets[0]
+    wb = xw.Book('Tariff Lookup Tool.xlsx')
+    sht = wb.sheets['Enter Importer Data Here']
 
-    sht.range('A1').value = a
-    sht.range('B1').value = b
+    sht.range('C2').value = product_coo
+    sht.range('D2').value = hts_code
 
-    wb.app.calculate()  # 讓 Excel 運算公式
+    wb.app.calculate()
 
-    result = sht.range('C1').value
+    cells = ['M2', 'Q2', 'T2', 'AV2', 'AE2', 'AF2']
+    results = {cell: sht.range(cell).value for cell in cells}
 
     wb.save()
     wb.close()
 
-    return jsonify({'result': result})
-if __name__ == "__main__":
+    return jsonify(results)
+
+
+if __name__ == '__main__':
     app.run(debug=True)
