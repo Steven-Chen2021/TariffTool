@@ -11,24 +11,39 @@ def index():
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    product_coo = request.form.get('product_coo', '')
-    hts_code = request.form.get('hts_code', '')
+    coo_list = request.form.getlist('product_coo[]')
+    hts_list = request.form.getlist('hts_code[]')
 
     wb = xw.Book('Tariff Lookup Tool.xlsx')
     sht = wb.sheets['Enter Importer Data Here']
 
-    sht.range('C2').value = product_coo
-    sht.range('D2').value = hts_code
+    start_row = 2
+    for idx, (coo, hts) in enumerate(zip(coo_list, hts_list)):
+        row = start_row + idx
+        sht.range(f'C{row}').value = coo
+        sht.range(f'D{row}').value = hts
 
     wb.app.calculate()
 
-    cells = ['M2', 'Q2', 'T2', 'AB2', 'AE2', 'AF2']
-    results = {cell: sht.range(cell).value for cell in cells}
+    rows = []
+    for idx, (coo, hts) in enumerate(zip(coo_list, hts_list)):
+        row = start_row + idx
+        cells = {
+            'coo': coo,
+            'hts': hts,
+            'steel': sht.range(f'M{row}').value,
+            'aluminum': sht.range(f'Q{row}').value,
+            'tariff_301': sht.range(f'T{row}').value,
+            'china20': sht.range(f'AB{row}').value,
+            'reciprocal': sht.range(f'AE{row}').value,
+            'total_new_duty': sht.range(f'AF{row}').value,
+        }
+        rows.append(cells)
 
     wb.save()
     wb.close()
 
-    return jsonify(results)
+    return jsonify(rows)
 
 
 if __name__ == '__main__':
