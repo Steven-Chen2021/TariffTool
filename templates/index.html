@@ -23,12 +23,12 @@
             .then(res => res.json())
             .then(data => {
                 document.getElementById('results').innerHTML =
-                    'M2: ' + data.M2 + '<br>' +
-                    'Q2: ' + data.Q2 + '<br>' +
-                    'T2: ' + data.T2 + '<br>' +
-                    'AV2: ' + data.AV2 + '<br>' +
-                    'AE2: ' + data.AE2 + '<br>' +
-                    'AF2: ' + data.AF2;
+                    'Steel Tariff: ' + data.M2 + '<br>' +
+                    'Aluminum Tariff: ' + data.Q2 + '<br>' +
+                    '301 Tariff: ' + data.T2 + '<br>' +
+                    'New China 20%: ' + data.AB2 + '<br>' +
+                    'Applicable Reciprocal Tariff Rate: ' + data.AE2 + '<br>' +
+                    'Total New Duty Rate (not including Base Duty Rate, AD/CVD, or future tariffs): ' + data.AF2;
             });
         });
     </script>

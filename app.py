@@ -22,7 +22,7 @@ def calculate():
 
     wb.app.calculate()
 
-    cells = ['M2', 'Q2', 'T2', 'AV2', 'AE2', 'AF2']
+    cells = ['M2', 'Q2', 'T2', 'AB2', 'AE2', 'AF2']
     results = {cell: sht.range(cell).value for cell in cells}
 
     wb.save()
