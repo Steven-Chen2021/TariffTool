@@ -2,6 +2,45 @@
 <html>
 <head>
     <title>Tariff Lookup Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        form input {
+            margin-bottom: 10px;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 600px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+        }
+        th {
+            background-color: #1976D2;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <h2>Tariff Lookup Tool</h2>
@@ -10,9 +49,23 @@
         HTS Code: <input type="text" name="hts_code"><br>
         <button type="submit">Submit</button>
     </form>
-    <div id="results"></div>
+    <div id="results-container">
+        <table id="results-table" style="display:none;">
+            <thead>
+                <tr><th>Tariff Type</th><th>Rate</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <script>
+        function formatPercent(value) {
+            if (value === null || value === undefined || value === "") return "";
+            const num = parseFloat(value);
+            if (isNaN(num)) return value;
+            return (num * 100).toFixed(2) + '%';
+        }
+
         document.getElementById('calcForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -22,13 +75,27 @@
             })
             .then(res => res.json())
             .then(data => {
-                document.getElementById('results').innerHTML =
-                    'Steel Tariff: ' + data.M2 + '<br>' +
-                    'Aluminum Tariff: ' + data.Q2 + '<br>' +
-                    '301 Tariff: ' + data.T2 + '<br>' +
-                    'New China 20%: ' + data.AB2 + '<br>' +
-                    'Applicable Reciprocal Tariff Rate: ' + data.AE2 + '<br>' +
-                    'Total New Duty Rate (not including Base Duty Rate, AD/CVD, or future tariffs): ' + data.AF2;
+                const rows = [
+                    ['Steel Tariff', data.M2],
+                    ['Aluminum Tariff', data.Q2],
+                    ['301 Tariff', data.T2],
+                    ['New China 20%', data.AB2],
+                    ['Applicable Reciprocal Tariff Rate', data.AE2],
+                    ['Total New Duty Rate (not including Base Duty Rate, AD/CVD, or future tariffs)', data.AF2]
+                ];
+                const tbody = document.querySelector('#results-table tbody');
+                tbody.innerHTML = '';
+                rows.forEach(function(r) {
+                    const tr = document.createElement('tr');
+                    const tdLabel = document.createElement('td');
+                    tdLabel.textContent = r[0];
+                    const tdValue = document.createElement('td');
+                    tdValue.textContent = formatPercent(r[1]);
+                    tr.appendChild(tdLabel);
+                    tr.appendChild(tdValue);
+                    tbody.appendChild(tr);
+                });
+                document.getElementById('results-table').style.display = 'table';
             });
         });
     </script>
